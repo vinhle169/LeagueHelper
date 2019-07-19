@@ -3,10 +3,12 @@ import html
 import json
 import ast
 import datetime
+import string
 #p = f"https://na1.api.riotgames.com//lol/champion-mastery/v4/champion-masteries/by-summoner/{encryptedSummonerId}?api_key=RGAPI-5076519d-5d50-4e91-aa45-56d9c1573eb4"
 #reqs = requests.get(p)
 #champion_mastery = reqs.json()
 #print(champion_mastery)
+uppercase = string.ascii_letters
 with open("./id2champ.txt","r") as c:
 	champdata=ast.literal_eval(c.read())
 #add mastery level to top5 and add rank data and dont forget to update apikey
@@ -16,11 +18,10 @@ class Summoner():
 		i=f"https://na1.api.riotgames.com//lol/summoner/v4/summoners/by-name/{self.ign}?api_key={self.key}"
 		req = requests.get(i)
 		summonerdata = req.json()
+		#print(summonerdata)
 		self.lvl = summonerdata['summonerLevel']
 		self.accID = summonerdata['accountId']
 		self.encryptedID = summonerdata['id']
-		#print(self.accID)
-		#print(self.encryptedID)
 	def update_key(self,newkey):
 		self.key = newkey
 	def top5(self):
@@ -36,6 +37,16 @@ class Summoner():
 			masterylevel = self.champsplayed[i]['championLevel']
 			result+=f"{i+1}) {name}: Mastery Level {masterylevel}, with {points} mastery points\n"
 		return result
+	def rankdata(self):
+		i = f'https://na1.api.riotgames.com/lol/league/v4/entries/by-summoner/{self.encryptedID}?api_key={self.key}'
+		req = requests.get(i)
+		self.rankdata = (req.json())[0]
+		print(self.rankdata)
+		que=self.rankdata['queueType']
+		queuetype = que.replace('_',' ')
+		self.rank = f"{(self.rankdata['tier']).title()} {self.rankdata['rank']}"
+		rank = f"{self.ign} is {(self.rankdata['tier']).title()} {self.rankdata['rank']} in {queuetype.title()}"
+		return rank
 	def freeweek(self):
 		i = f"https://na1.api.riotgames.com/lol/platform/v3/champion-rotations?api_key={self.key}"
 		req = requests.get(i)
@@ -43,13 +54,15 @@ class Summoner():
 		if self.lvl>10:
 			rotation = self.freerotdata['freeChampionIds']
 			champrot = [champdata[str(i)] for i in rotation]
-			return "These are the champions that are free to play this week: "+', '.join(champrot)
+			return "These are the champions that are free to play this week: "+', '.join(champrot)+"."
 		else:
 			rotation = self.freerotdata['freeChampionIdsForNewPlayers']
+			champrot = [champdata[str(i)] for i in rotation]
+			return "These are the champions that are free to play this week: "+', '.join(champrot)+"."
 api_key ="RGAPI-69cb14ee-6af8-4a2f-91b0-90d630889575"
 Vinh = Summoner("Vinhabust",api_key)
 print(Vinh.top5())
-print(Vinh.freeweek())
+print(Vinh.rankdata())
 '''
 Nolan = Summoner("nowin REE",api_key)
 print(Nolan.mastery())
