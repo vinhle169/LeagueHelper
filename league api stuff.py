@@ -8,10 +8,12 @@ import string
 #reqs = requests.get(p)
 #champion_mastery = reqs.json()
 #print(champion_mastery)
+today = datetime.date.today()
+print(today)
 uppercase = string.ascii_letters
 with open("./id2champ.txt","r") as c:
 	champdata=ast.literal_eval(c.read())
-#add mastery level to top5 and add rank data and dont forget to update apikey
+#UPDATE APIKEY
 class Summoner():
 	def __init__(self,summonerName,api_key):
 		self.ign,self.key = summonerName,api_key
@@ -30,7 +32,7 @@ class Summoner():
 		req = requests.get(i)
 		self.champsplayed = req.json()
 		#print(champion_mastery)
-		for i in range(5):
+		for i in range(8):
 			key = (self.champsplayed[i]['championId'])
 			name = champdata[str(key)]
 			points = self.champsplayed[i]['championPoints']
@@ -44,6 +46,7 @@ class Summoner():
 		print(self.rankdata)
 		que=self.rankdata['queueType']
 		queuetype = que.replace('_',' ')
+		self.winrate = self.rankdata['wins']/(self.rankdata['wins']+self.rankdata['losses'])
 		self.rank = f"{(self.rankdata['tier']).title()} {self.rankdata['rank']}"
 		rank = f"{self.ign} is {(self.rankdata['tier']).title()} {self.rankdata['rank']} in {queuetype.title()}"
 		return rank
@@ -62,7 +65,10 @@ class Summoner():
 api_key ="RGAPI-69cb14ee-6af8-4a2f-91b0-90d630889575"
 Vinh = Summoner("Vinhabust",api_key)
 print(Vinh.top5())
-print(Vinh.rankdata())
+Vinh.rankdata()
+print(Vinh.winrate)
+yohan = Summoner("Y0H0N3Y",api_key)
+print(yohan.top5())
 '''
 Nolan = Summoner("nowin REE",api_key)
 print(Nolan.mastery())
