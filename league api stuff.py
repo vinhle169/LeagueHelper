@@ -4,10 +4,8 @@ import json
 import ast
 import datetime
 import string
-#p = f"https://na1.api.riotgames.com//lol/champion-mastery/v4/champion-masteries/by-summoner/{encryptedSummonerId}?api_key=RGAPI-5076519d-5d50-4e91-aa45-56d9c1573eb4"
-#reqs = requests.get(p)
-#champion_mastery = reqs.json()
-#print(champion_mastery)
+
+#WHICH CHAMPS ARE CLOSE TO LEVELING UP IN MASTERY, days until freeweek change
 today = datetime.date.today()
 print(today)
 uppercase = string.ascii_letters
@@ -16,22 +14,33 @@ with open("./id2champ.txt","r") as c:
 #UPDATE APIKEY
 class Summoner():
 	def __init__(self,summonerName,api_key):
+		### import json of summoner info
 		self.ign,self.key = summonerName,api_key
 		i=f"https://na1.api.riotgames.com//lol/summoner/v4/summoners/by-name/{self.ign}?api_key={self.key}"
 		req = requests.get(i)
 		summonerdata = req.json()
 		#print(summonerdata)
+		### save some important variables
 		self.lvl = summonerdata['summonerLevel']
 		self.accID = summonerdata['accountId']
 		self.encryptedID = summonerdata['id']
+		### import json of summoners champion data
+		j = f"https://na1.api.riotgames.com//lol/champion-mastery/v4/champion-masteries/by-summoner/{self.encryptedID}?api_key={self.key}"
+		req = requests.get(j)
+		self.champsplayed = req.json()
 	def update_key(self,newkey):
 		self.key = newkey
+
+	def get_chest(self):
+		#print(self.champsplayed)
+		self.chestable = []
+		for c in self.champsplayed:
+			if c['chestGranted']!=True:
+				self.chestable.append(champdata[str(c['championId'])])
+		return self.ign+" can get a chest by playing as: " + ', '.join(self.toplay)
+
 	def topX(self,x):
 		result = f"{self.ign}'s most played champions are:\n"
-		i = f"https://na1.api.riotgames.com//lol/champion-mastery/v4/champion-masteries/by-summoner/{self.encryptedID}?api_key={self.key}"
-		req = requests.get(i)
-		self.champsplayed = req.json()
-		#print(champion_mastery)
 		for i in range(x):
 			key = (self.champsplayed[i]['championId'])
 			name = champdata[str(key)]
@@ -65,8 +74,7 @@ class Summoner():
 			return other(self)
 		else:
 			rank = f"{self.ign} is {(self.rankdata['tier']).title()} {self.rankdata['rank']} in {queuetype.title()}"
-			return rank
-		
+			return rank	
 
 	def freeweek(self):
 		i = f"https://na1.api.riotgames.com/lol/platform/v3/champion-rotations?api_key={self.key}"
@@ -82,8 +90,10 @@ class Summoner():
 			return "These are the champions that are free to play this week: "+', '.join(champrot)+"."
 api_key ="RGAPI-25f5f705-4c25-4c24-bfa2-48737eb537d1"
 Vinh = Summoner("Vinhabust",api_key)
-print(Vinh.topX(1))
-print(Vinh.rankdata('other'))
+print(Vinh.get_chest())
+
+#print(Vinh.topX(1))
+#print(Vinh.rankdata('other'))
 #yohan = Summoner("Y0H0N3Y",api_key)
 #print(yohan.topX(1))
 '''
