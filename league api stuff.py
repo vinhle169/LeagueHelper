@@ -37,7 +37,7 @@ class Summoner():
 		for c in self.champsplayed:
 			if c['chestGranted']!=True:
 				self.chestable.append(champdata[str(c['championId'])])
-		return self.ign+" can get a chest by playing as: " + ', '.join(self.toplay)
+		return self.ign+" can get a chest by playing as: " + ', '.join(self.chestable)
 
 	def topX(self,x):
 		result = f"{self.ign}'s most played champions are:\n"
@@ -80,18 +80,21 @@ class Summoner():
 		i = f"https://na1.api.riotgames.com/lol/platform/v3/champion-rotations?api_key={self.key}"
 		req = requests.get(i)
 		self.freerotdata = req.json()
+		daysuntiltuesday = (2-today.weekday())%6
+		if daysuntiltuesday==0: daysuntiltuesday = 7
+		daysuntiltuesday = f"\nThere are {daysuntiltuesday} more days until a new rotation."
 		if self.lvl>10:
 			rotation = self.freerotdata['freeChampionIds']
 			champrot = [champdata[str(i)] for i in rotation]
-			return "These are the champions that are free to play this week: "+', '.join(champrot)+"."
+			return "These are the champions that are free to play this week: "+', '.join(champrot)+"."+daysuntiltuesday
 		else:
 			rotation = self.freerotdata['freeChampionIdsForNewPlayers']
 			champrot = [champdata[str(i)] for i in rotation]
-			return "These are the champions that are free to play this week: "+', '.join(champrot)+"."
-api_key ="RGAPI-25f5f705-4c25-4c24-bfa2-48737eb537d1"
+			return "These are the champions that are free to play this week: "+', '.join(champrot)+"."+daysuntiltuesday
+api_key ="RGAPI-b613071a-9803-4d6b-8634-5bcdf2e09984"
 Vinh = Summoner("Vinhabust",api_key)
-print(Vinh.get_chest())
-
+#print(Vinh.get_chest())
+print(Vinh.freeweek())
 #print(Vinh.topX(1))
 #print(Vinh.rankdata('other'))
 #yohan = Summoner("Y0H0N3Y",api_key)
