@@ -5,13 +5,13 @@ import ast
 import datetime
 import string
 
-#WHICH CHAMPS ARE CLOSE TO LEVELING UP IN MASTERY.
+#Overhaul rank data to include flex and tft
 today = datetime.date.today()
 print(today)
 uppercase = string.ascii_letters
 with open("./id2champ.txt","r") as c:
 	champdata=ast.literal_eval(c.read())
-api_key = "RGAPI-d223b125-cf28-4a26-9a7a-5bd76fbd787b"
+api_key = "RGAPI-d0403c28-04bd-42c4-8ae2-4c010e75e29a"
 #UPDATE APIKEY
 def generate_json(url):
 	req = requests.get(url)
@@ -27,12 +27,14 @@ class Summoner():
 		self.lvl = self.summonerjson['summonerLevel']
 		self.accID = self.summonerjson['accountId']
 		self.encryptedID = self.summonerjson['id']
+		print(self.encryptedID,"e-id")
 		### import json of summoners champion data
 		j = f"https://na1.api.riotgames.com//lol/champion-mastery/v4/champion-masteries/by-summoner/{self.encryptedID}?api_key={self.key}"
 		self.champjson = generate_json(j)
+		print(f"Profile for {self.ign} created.")
 	def update_key(self,newkey):
 		self.key = newkey
-	def champ(self, func, x=5):	
+	def champ(self, func=None, x=5):	
 		def get_chest(self):
 			print(self.champjson)
 			self.chestable = []
@@ -51,7 +53,7 @@ class Summoner():
 				result+=f"{i+1}) {name}: Mastery Level {masterylevel}, with {points} mastery points\n"
 			return result
 		###
-		def masteryup(self,x):
+		def masteryup(self):
 			lvl = {1:[],2:[],3:[],4:[],5:[],6:[]}
 			#print(self.champjson)
 			toreturn=""
@@ -60,7 +62,7 @@ class Summoner():
 			for c in self.champjson:
 				if c['championLevel']!=7: lvl[c['championLevel']].append([champdata[str(c['championId'])],c['championPointsUntilNextLevel'],c['championId'],c['tokensEarned']])
 			for j in list(lvl.keys()):
-				big=[0,0,0,0]
+				big=[-1]*4
 				if j==5 or j==6:
 					for i in lvl[j]:
 						if i[3]>big[3]: big=i
@@ -80,10 +82,11 @@ class Summoner():
 			return toreturn+"You can earn about 500 points per game, Mastery 6 tokens are earned with at least an S-, Mastery 7 with at least an S."
 		if func == "get_chest": return get_chest(self)
 		elif func == "topX": return topX(self,x)
-		elif func =="masteryup": return masteryup(self,x)
+		elif func =="masteryup": return masteryup(self)
+		else: return None 
 
 
-	def rankdata(self,func):
+	def rankdata(self,func=None):
 		def winr8(self):
 			numgames=self.rankdata['wins']+self.rankdata['losses']
 			return str(self.winrate)+f"% in {numgames} games."
@@ -94,6 +97,7 @@ class Summoner():
 			return returnstring
 		i = f'https://na1.api.riotgames.com/lol/league/v4/entries/by-summoner/{self.encryptedID}?api_key={self.key}'
 		self.rankdata = (generate_json(i))[0]
+		print(self.rankdata)
 		#print(self.rankdata)
 		que=self.rankdata['queueType']
 		queuetype = que.replace('_',' ')
@@ -125,7 +129,9 @@ class Summoner():
 			return "These are the champions that are free to play this week: "+', '.join(champrot)+"."+daysuntiltuesday
 Vinh = Summoner("Vinhabust",api_key)
 #print(Vinh.champ("get_chest"))
-print(Vinh.champ("masteryup"))
+print(Vinh.champ())
 #print(Vinh.get_chest())
 #print(Vinh.freeweek())
-#print(Vinh.rankdata('rank'))
+print(Vinh.rankdata())
+
+
