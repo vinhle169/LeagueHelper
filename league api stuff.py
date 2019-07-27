@@ -11,7 +11,7 @@ print(today)
 uppercase = string.ascii_letters
 with open("./id2champ.txt","r") as c:
 	champdata=ast.literal_eval(c.read())
-api_key = "RGAPI-d0403c28-04bd-42c4-8ae2-4c010e75e29a"
+api_key = "RGAPI-9ca704f5-46ca-449b-a761-fcc747d86308"
 #UPDATE APIKEY
 def generate_json(url):
 	req = requests.get(url)
@@ -32,6 +32,9 @@ class Summoner():
 		j = f"https://na1.api.riotgames.com//lol/champion-mastery/v4/champion-masteries/by-summoner/{self.encryptedID}?api_key={self.key}"
 		self.champjson = generate_json(j)
 		print(f"Profile for {self.ign} created.")
+		k = f'https://na1.api.riotgames.com/lol/league/v4/entries/by-summoner/{self.encryptedID}?api_key={self.key}'
+		self.rankdata = generate_json(k)
+		#print(self.rankdata)
 	def update_key(self,newkey):
 		self.key = newkey
 	def champ(self, func=None, x=5):	
@@ -86,23 +89,20 @@ class Summoner():
 		else: return None 
 
 
-	def rankdata(self,func=None):
+	def ranked(self,func=None,queuetype='solo'):
 		def winr8(self):
-			numgames=self.rankdata['wins']+self.rankdata['losses']
-			return str(self.winrate)+f"% in {numgames} games."
+			wr = round(rankdata['wins']*100/(rankdata['losses']+rankdata['wins']),2)
+			return f"Your winrate in {queue} is {wr}%."
 		def rank(self):
-			return self.rank
+			rnk = f"{rankdata['tier'].title()} {rankdata['rank']} {rankdata['leaguePoints']} lp."
+			return f"In {queue} you are {rnk}"
 		def other(self):
-			returnstring = f"Veteran: {self.rankdata['veteran']} ||| Inactive: {self.rankdata['inactive']} ||| Just Arrived: {self.rankdata['freshBlood']} ||| Winstreak: {self.rankdata['hotStreak']}"
-			return returnstring
-		i = f'https://na1.api.riotgames.com/lol/league/v4/entries/by-summoner/{self.encryptedID}?api_key={self.key}'
-		self.rankdata = (generate_json(i))[0]
-		print(self.rankdata)
-		#print(self.rankdata)
-		que=self.rankdata['queueType']
-		queuetype = que.replace('_',' ')
-		self.winrate = round(self.rankdata['wins']*100/(self.rankdata['wins']+self.rankdata['losses']),2)
-		self.rank = f"{(self.rankdata['tier']).title()} {self.rankdata['rank']} {self.rankdata['leaguePoints']} lp"
+			return f"Veteran: {rankdata['veteran']}\nInactive: {rankdata['inactive']}\nWinstreak: {rankdata['hotStreak']}\nFreshblood: {rankdata['freshBlood']}"
+		for i in self.rankdata:
+			if queuetype.upper() in i['queueType']: rankdata = i
+		print(rankdata)
+		queue = rankdata['queueType'].replace('_',' ').title().replace("Sr","SR").replace("Tft","TFT")
+		print(queue)
 		if func == 'winr8':
 			return winr8(self)
 		elif func == 'rank':
@@ -110,9 +110,7 @@ class Summoner():
 		elif func == 'other':
 			return other(self)
 		else:
-			rank = f"{self.ign} is {(self.rankdata['tier']).title()} {self.rankdata['rank']} in {queuetype.title()}"
-			return rank	
-
+			return rankdata
 	def freeweek(self):
 		i = f"https://na1.api.riotgames.com/lol/platform/v3/champion-rotations?api_key={self.key}"
 		self.freerotdata = generate_json(i)
@@ -128,10 +126,11 @@ class Summoner():
 			champrot = [champdata[str(i)] for i in rotation]
 			return "These are the champions that are free to play this week: "+', '.join(champrot)+"."+daysuntiltuesday
 Vinh = Summoner("Vinhabust",api_key)
+print(Vinh.ranked('rank','tft'))
 #print(Vinh.champ("get_chest"))
-print(Vinh.champ())
+#print(Vinh.champ('masteryup'))
+#Nolan = Summoner("nowin REE",api_key)
+#print(Nolan.champ('get_chest'))
 #print(Vinh.get_chest())
 #print(Vinh.freeweek())
-print(Vinh.rankdata())
-
 
