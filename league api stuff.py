@@ -5,13 +5,13 @@ import ast
 import datetime
 import string
 
-#Overhaul rank data to include flex and tft
+#Figure out what to do next
 today = datetime.date.today()
 print(today)
 uppercase = string.ascii_letters
 with open("./id2champ.txt","r") as c:
 	champdata=ast.literal_eval(c.read())
-api_key = "RGAPI-9ca704f5-46ca-449b-a761-fcc747d86308"
+api_key = "RGAPI-6852e0b7-5aaf-4360-96d2-c0e0cffbd1e3"
 #UPDATE APIKEY
 def generate_json(url):
 	req = requests.get(url)
@@ -27,7 +27,7 @@ class Summoner():
 		self.lvl = self.summonerjson['summonerLevel']
 		self.accID = self.summonerjson['accountId']
 		self.encryptedID = self.summonerjson['id']
-		print(self.encryptedID,"e-id")
+		#print(self.encryptedID,"e-id")
 		### import json of summoners champion data
 		j = f"https://na1.api.riotgames.com//lol/champion-mastery/v4/champion-masteries/by-summoner/{self.encryptedID}?api_key={self.key}"
 		self.champjson = generate_json(j)
@@ -35,9 +35,10 @@ class Summoner():
 		k = f'https://na1.api.riotgames.com/lol/league/v4/entries/by-summoner/{self.encryptedID}?api_key={self.key}'
 		self.rankdata = generate_json(k)
 		#print(self.rankdata)
-	def update_key(self,newkey):
-		self.key = newkey
-	def champ(self, func=None, x=5):	
+	def whatfunctions(self):
+		return {"champ":{'get_chest':'shows what champions you can get a chest from','topX':'displays input X number of top champions based on mastery', 'masteryup':'shows which champions from each mastery level are closest to leveling up'},'ranked':{'winr8':'winrate in the queue you selected','rank':'displays rank','other':'other stats'},'freeweek':'displays what champions are free to play this week'}
+
+	def champ(self, func=None, x=5):
 		def get_chest(self):
 			print(self.champjson)
 			self.chestable = []
@@ -88,11 +89,10 @@ class Summoner():
 		elif func =="masteryup": return masteryup(self)
 		else: return None 
 
-
 	def ranked(self,func=None,queuetype='solo'):
 		def winr8(self):
 			wr = round(rankdata['wins']*100/(rankdata['losses']+rankdata['wins']),2)
-			return f"Your winrate in {queue} is {wr}%."
+			return f"Your winrate in {queue} is {wr}% in {rankdata['wins']+rankdata['losses']}."
 		def rank(self):
 			rnk = f"{rankdata['tier'].title()} {rankdata['rank']} {rankdata['leaguePoints']} lp."
 			return f"In {queue} you are {rnk}"
@@ -100,9 +100,9 @@ class Summoner():
 			return f"Veteran: {rankdata['veteran']}\nInactive: {rankdata['inactive']}\nWinstreak: {rankdata['hotStreak']}\nFreshblood: {rankdata['freshBlood']}"
 		for i in self.rankdata:
 			if queuetype.upper() in i['queueType']: rankdata = i
-		print(rankdata)
+		#print(rankdata)
 		queue = rankdata['queueType'].replace('_',' ').title().replace("Sr","SR").replace("Tft","TFT")
-		print(queue)
+		#print(queue)
 		if func == 'winr8':
 			return winr8(self)
 		elif func == 'rank':
@@ -126,8 +126,7 @@ class Summoner():
 			champrot = [champdata[str(i)] for i in rotation]
 			return "These are the champions that are free to play this week: "+', '.join(champrot)+"."+daysuntiltuesday
 Vinh = Summoner("Vinhabust",api_key)
-print(Vinh.ranked('rank','tft'))
-#print(Vinh.champ("get_chest"))
+print(Vinh.whatfunctions())
 #print(Vinh.champ('masteryup'))
 #Nolan = Summoner("nowin REE",api_key)
 #print(Nolan.champ('get_chest'))
